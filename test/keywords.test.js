@@ -50,9 +50,14 @@ describe('Keywords', function () {
   })
 
   describe('#custom()', function () {
-    var FooSchema = new Schema()
+    var FooSchema = new Schema({
+      tits : {
+        type : String,
+        required : true
+      }
+    })
     FooSchema.plugin(keywords, {
-      source: ['moo', 'cow']
+      source: ['moo', 'cow', 'tits']
     , target: 'milk'
     , minLength: 3
     , invalidChar: 'i'
@@ -63,6 +68,7 @@ describe('Keywords', function () {
       , bar = new BarModel({ 
           moo: 'fooed bars test one'
         , cow: 'test õne twø lorem'
+        , tits: 'three ipsum'
         })
     
     before(function () {
@@ -79,11 +85,16 @@ describe('Keywords', function () {
       done()
     })
 
+    it('should not override properties', function (done) {
+      assert.strictEqual(FooSchema.paths.tits.options.required, true)
+      done()
+    })
+
     it('should extract keywords on save', function (done) {
       bar.save(function (err, doc) {
         assert.strictEqual(err, null)
         assert.strictEqual(doc.milk.toString(), [
-          'foo', 'bar', 'test', 'on', 'two', 'lorem'
+          'foo', 'bar', 'test', 'on', 'two', 'lorem', 'three', 'ipsum'
         ].toString())
         done()
       })
